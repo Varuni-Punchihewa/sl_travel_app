@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
+import 'package:sl_travel_app/services/location.dart';
 
 class LoadingScreen extends StatefulWidget {
   @override
@@ -8,12 +9,25 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
-  Completer<GoogleMapController> _controller = Completer();
+  static double latitude;
+  static double longitude;
 
-  static final CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
-    zoom: 14.4746,
-  );
+  @override
+  void initState() {
+    super.initState();
+    getLocation();
+  }
+
+  void getLocation() async {
+    Location location = new Location();
+    await location.getCurrentLocation();
+    latitude = location.latitude;
+    longitude = location.longitude;
+    print(latitude);
+    print(longitude);
+  }
+
+  Completer<GoogleMapController> _controller = Completer();
 
   static final CameraPosition _kLake = CameraPosition(
       bearing: 192.8334901395799,
@@ -46,7 +60,10 @@ class _LoadingScreenState extends State<LoadingScreen> {
       body: SafeArea(
         child: GoogleMap(
           mapType: MapType.normal,
-          initialCameraPosition: _kGooglePlex,
+          initialCameraPosition: CameraPosition(
+            target: LatLng(latitude, longitude),
+            zoom: 14.4746,
+          ),
           onMapCreated: (GoogleMapController controller) {
             try {
               _controller.complete(controller);
