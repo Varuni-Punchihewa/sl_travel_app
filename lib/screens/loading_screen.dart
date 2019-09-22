@@ -45,7 +45,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
       ),
       body: SafeArea(
         child: GoogleMap(
-          mapType: MapType.hybrid,
+          mapType: MapType.normal,
           initialCameraPosition: _kGooglePlex,
           onMapCreated: (GoogleMapController controller) {
             try {
