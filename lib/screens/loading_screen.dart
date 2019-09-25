@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
-import 'dart:math';
 import 'package:geolocator/geolocator.dart';
 
 class LoadingScreen extends StatefulWidget {
@@ -15,8 +14,8 @@ class _LoadingScreenState extends State<LoadingScreen> {
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
   int _markerIdCounter = 1;
   MarkerId selectedMarker;
-
   Geolocator _geolocator;
+  Completer<GoogleMapController> _controller = Completer();
 
   void checkPermission() {
     _geolocator.checkGeolocationPermissionStatus().then((status) {
@@ -58,6 +57,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
           target: LatLng(position.latitude, position.longitude), zoom: 15.0);
       final GoogleMapController controller = await _controller.future;
       controller.animateCamera(CameraUpdate.newCameraPosition(_newPosition));
+      _add();
     });
   }
 
@@ -66,24 +66,23 @@ class _LoadingScreenState extends State<LoadingScreen> {
       Position newPosition = await Geolocator()
           .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
 
-      setState(() {
+      setState(() async {
         latitude = newPosition.latitude;
         longitude = newPosition.longitude;
         print('Current latitude: ${newPosition.latitude}');
         print('Current longitude: ${newPosition.longitude}');
+        final CameraPosition _changedPosition =
+            CameraPosition(target: LatLng(latitude, longitude), zoom: 15.0);
+
+        final GoogleMapController controller = await _controller.future;
+        controller
+            .animateCamera(CameraUpdate.newCameraPosition(_changedPosition));
+        _add();
       });
     } catch (e) {
       print('Error: ${e.toString()}');
     }
-
-    final GoogleMapController controller = await _controller.future;
-    controller.animateCamera(CameraUpdate.newCameraPosition(_changedPosition));
   }
-
-  Completer<GoogleMapController> _controller = Completer();
-
-  static final CameraPosition _changedPosition =
-      CameraPosition(target: LatLng(6.715453, 79.989470), zoom: 15.0);
 
   void _add() {
     //final int markerCount = markers.length;
@@ -91,14 +90,11 @@ class _LoadingScreenState extends State<LoadingScreen> {
     final String markerIdVal = 'marker_id_$_markerIdCounter';
     _markerIdCounter++;
     final MarkerId markerId = MarkerId(markerIdVal);
-    LatLng center = LatLng(latitude, longitude);
+    //LatLng center = LatLng(latitude, longitude);
 
     Marker marker = Marker(
       markerId: markerId,
-      position: LatLng(
-        center.latitude + sin(_markerIdCounter * pi / 6.0) / 20.0,
-        center.longitude + cos(_markerIdCounter * pi / 6.0) / 20.0,
-      ),
+      position: LatLng(latitude, longitude),
       infoWindow: InfoWindow(title: markerIdVal, snippet: '*'),
       onTap: () {
         _onMarkerTapped(markerId);
