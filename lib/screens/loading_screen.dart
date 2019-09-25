@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
 import 'package:sl_travel_app/services/location.dart';
+import 'dart:math';
 
 class LoadingScreen extends StatefulWidget {
   @override
@@ -9,8 +10,11 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
-  static double latitude;
-  static double longitude;
+  double latitude;
+  double longitude;
+  Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
+  int _markerIdCounter = 1;
+  MarkerId selectedMarker;
 
   @override
   void initState() {
@@ -23,8 +27,17 @@ class _LoadingScreenState extends State<LoadingScreen> {
     await location.getCurrentLocation();
     latitude = location.latitude;
     longitude = location.longitude;
-    print(latitude);
-    print(longitude);
+    print('Current latitude: $latitude');
+    print('Current Longitude: $longitude');
+    //_add();
+
+    setState(() {
+      location.positionChanged();
+      latitude = location.latitude;
+      longitude = location.longitude;
+      print('After tacking latitude: $latitude');
+      print('After tracking longitude: $longitude');
+    });
   }
 
   Completer<GoogleMapController> _controller = Completer();
@@ -34,6 +47,51 @@ class _LoadingScreenState extends State<LoadingScreen> {
       target: LatLng(37.43296265331129, -122.08832357078792),
       tilt: 59.440717697143555,
       zoom: 19.151926040649414);
+
+  void _add() {
+    //final int markerCount = markers.length;
+
+    final String markerIdVal = 'marker_id_$_markerIdCounter';
+    _markerIdCounter++;
+    final MarkerId markerId = MarkerId(markerIdVal);
+    LatLng center = LatLng(latitude, longitude);
+
+    Marker marker = Marker(
+      markerId: markerId,
+      position: LatLng(
+        center.latitude + sin(_markerIdCounter * pi / 6.0) / 20.0,
+        center.longitude + cos(_markerIdCounter * pi / 6.0) / 20.0,
+      ),
+      infoWindow: InfoWindow(title: markerIdVal, snippet: '*'),
+      onTap: () {
+        _onMarkerTapped(markerId);
+      },
+    );
+
+    setState(() {
+      markers[markerId] = marker;
+    });
+  }
+
+  void _onMarkerTapped(MarkerId markerId) {
+    final Marker tappedMarker = markers[markerId];
+    if (tappedMarker != null) {
+      setState(() {
+        if (markers.containsKey(selectedMarker)) {
+          final Marker resetOld = markers[selectedMarker]
+              .copyWith(iconParam: BitmapDescriptor.defaultMarker);
+          markers[selectedMarker] = resetOld;
+        }
+        selectedMarker = markerId;
+        final Marker newMarker = tappedMarker.copyWith(
+          iconParam: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueGreen,
+          ),
+        );
+        markers[markerId] = newMarker;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,6 +129,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
               _controller.completeError(error);
             }
           },
+          markers: Set<Marker>.of(markers.values),
         ),
       ),
     );
