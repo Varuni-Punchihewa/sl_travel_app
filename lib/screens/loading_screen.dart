@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
 import 'package:geolocator/geolocator.dart';
+import 'package:sl_travel_app/services/place_information.dart';
 
 class LoadingScreen extends StatefulWidget {
   @override
@@ -15,7 +16,15 @@ class _LoadingScreenState extends State<LoadingScreen> {
   int _markerIdCounter = 1;
   MarkerId selectedMarker;
   Geolocator _geolocator;
+  String _address = '';
   Completer<GoogleMapController> _controller = Completer();
+
+  double lat;
+  double lon;
+  String name;
+  bool openNow;
+  List photos = [];
+  String placeID;
 
   void checkPermission() {
     _geolocator.checkGeolocationPermissionStatus().then((status) {
@@ -35,7 +44,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
   }
 
   @override
-  void initState() {
+  initState() {
     super.initState();
     _geolocator = Geolocator();
     LocationOptions locationOptions = LocationOptions(
@@ -58,30 +67,85 @@ class _LoadingScreenState extends State<LoadingScreen> {
       final GoogleMapController controller = await _controller.future;
       controller.animateCamera(CameraUpdate.newCameraPosition(_newPosition));
       _add();
+      _onPlaceChanged();
     });
   }
 
-  void updateLocation() async {
+  Future<void> _onPlaceChanged() async {
+    String address = 'unknown';
+    PlaceInfo placeInfo = PlaceInfo();
+    final List<Placemark> placemarks =
+        await Geolocator().placemarkFromCoordinates(latitude, longitude);
+
+    if (placemarks != null && placemarks.isNotEmpty) {
+      address = _buildAddressString(placemarks.first);
+      print(address);
+      var placeData = await placeInfo.getNearbyPlaces(address);
+      extractNearbyPlaces(placeData);
+    }
+
+    setState(() {
+      _address = '$address';
+    });
+  }
+
+  void extractNearbyPlaces(decodedData) {
+    setState(() {
+      if (decodedData == null) {
+        lat = null;
+        lon = null;
+        name = '';
+        openNow = false;
+        photos = null;
+        placeID = '';
+        return;
+      }
+
+      getInfo(decodedData);
+    });
+  }
+
+  getInfo(decodedData) {}
+
+  static String _buildAddressString(Placemark placemark) {
+    final String name = placemark.name ?? '';
+    final String city = placemark.locality ?? '';
+    final String subLocality = placemark.subLocality ?? '';
+    final String state = placemark.administrativeArea ?? '';
+    final String subAdministrativeArea = placemark.subAdministrativeArea ?? '';
+    final String country = placemark.country ?? '';
+
+    return '$name, $subLocality $city, $subAdministrativeArea, $state, $country';
+  }
+
+  Future<void> updateLocation() async {
     try {
       Position newPosition = await Geolocator()
           .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
 
-      setState(() async {
+      setState(() {
         latitude = newPosition.latitude;
         longitude = newPosition.longitude;
         print('Current latitude: ${newPosition.latitude}');
         print('Current longitude: ${newPosition.longitude}');
         final CameraPosition _changedPosition =
             CameraPosition(target: LatLng(latitude, longitude), zoom: 15.0);
+        _animateCameraForChangedLocation(_changedPosition);
 
-        final GoogleMapController controller = await _controller.future;
-        controller
-            .animateCamera(CameraUpdate.newCameraPosition(_changedPosition));
         _add();
+//        List<Placemark> placemark =
+//            await Geolocator().placemarkFromCoordinates(latitude, longitude);
+//        print('*****************************************');
+//        print(placemark);
       });
     } catch (e) {
       print('Error: ${e.toString()}');
     }
+  }
+
+  Future<void> _animateCameraForChangedLocation(var _changedPosition) async {
+    final GoogleMapController controller = await _controller.future;
+    controller.animateCamera(CameraUpdate.newCameraPosition(_changedPosition));
   }
 
   void _add() {
