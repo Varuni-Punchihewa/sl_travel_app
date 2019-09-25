@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
-import 'package:sl_travel_app/services/location.dart';
 import 'dart:math';
+import 'package:geolocator/geolocator.dart';
 
 class LoadingScreen extends StatefulWidget {
   @override
@@ -10,43 +10,80 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
-  double latitude;
-  double longitude;
+  static double latitude;
+  static double longitude;
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
   int _markerIdCounter = 1;
   MarkerId selectedMarker;
 
+  Geolocator _geolocator;
+
+  void checkPermission() {
+    _geolocator.checkGeolocationPermissionStatus().then((status) {
+      print('status: $status');
+    });
+    _geolocator
+        .checkGeolocationPermissionStatus(
+            locationPermission: GeolocationPermission.locationAlways)
+        .then((status) {
+      print('always status: $status');
+    });
+    _geolocator.checkGeolocationPermissionStatus(
+        locationPermission: GeolocationPermission.locationWhenInUse)
+      ..then((status) {
+        print('whenInUse status: $status');
+      });
+  }
+
   @override
   void initState() {
     super.initState();
-    getLocation();
+    _geolocator = Geolocator();
+    LocationOptions locationOptions = LocationOptions(
+        accuracy: LocationAccuracy.bestForNavigation, distanceFilter: 10);
+
+    checkPermission();
+    updateLocation();
+
+    // ignore: unused_local_variable, cancel_subscriptions
+    StreamSubscription positionStream = _geolocator
+        .getPositionStream(locationOptions)
+        .listen((Position position) async {
+      //_position = position;
+      latitude = position.latitude;
+      longitude = position.longitude;
+      print('Changed latitude: ${position.latitude}');
+      print('Changed longitude: ${position.longitude}');
+      final CameraPosition _newPosition = CameraPosition(
+          target: LatLng(position.latitude, position.longitude), zoom: 15.0);
+      final GoogleMapController controller = await _controller.future;
+      controller.animateCamera(CameraUpdate.newCameraPosition(_newPosition));
+    });
   }
 
-  void getLocation() async {
-    Location location = new Location();
-    await location.getCurrentLocation();
-    latitude = location.latitude;
-    longitude = location.longitude;
-    print('Current latitude: $latitude');
-    print('Current Longitude: $longitude');
-    //_add();
+  void updateLocation() async {
+    try {
+      Position newPosition = await Geolocator()
+          .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
 
-    setState(() {
-      location.positionChanged();
-      latitude = location.latitude;
-      longitude = location.longitude;
-      print('After tacking latitude: $latitude');
-      print('After tracking longitude: $longitude');
-    });
+      setState(() {
+        latitude = newPosition.latitude;
+        longitude = newPosition.longitude;
+        print('Current latitude: ${newPosition.latitude}');
+        print('Current longitude: ${newPosition.longitude}');
+      });
+    } catch (e) {
+      print('Error: ${e.toString()}');
+    }
+
+    final GoogleMapController controller = await _controller.future;
+    controller.animateCamera(CameraUpdate.newCameraPosition(_changedPosition));
   }
 
   Completer<GoogleMapController> _controller = Completer();
 
-  static final CameraPosition _kLake = CameraPosition(
-      bearing: 192.8334901395799,
-      target: LatLng(37.43296265331129, -122.08832357078792),
-      tilt: 59.440717697143555,
-      zoom: 19.151926040649414);
+  static final CameraPosition _changedPosition =
+      CameraPosition(target: LatLng(6.715453, 79.989470), zoom: 15.0);
 
   void _add() {
     //final int markerCount = markers.length;
@@ -120,7 +157,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
           mapType: MapType.normal,
           initialCameraPosition: CameraPosition(
             target: LatLng(latitude, longitude),
-            zoom: 14.4746,
+            zoom: 15.0,
           ),
           onMapCreated: (GoogleMapController controller) {
             try {
@@ -130,6 +167,8 @@ class _LoadingScreenState extends State<LoadingScreen> {
             }
           },
           markers: Set<Marker>.of(markers.values),
+          myLocationButtonEnabled: true,
+          myLocationEnabled: true,
         ),
       ),
     );
