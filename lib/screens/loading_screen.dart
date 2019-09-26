@@ -88,7 +88,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
       print('Changed latitude: ${position.latitude}');
       print('Changed longitude: ${position.longitude}');
       final CameraPosition _newPosition = CameraPosition(
-          target: LatLng(position.latitude, position.longitude), zoom: 15.0);
+          target: LatLng(position.latitude, position.longitude), zoom: 11.0);
       final GoogleMapController controller = await _controller.future;
       controller.animateCamera(CameraUpdate.newCameraPosition(_newPosition));
 //      _add();
@@ -152,6 +152,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
         '--------------------------------------------------------------------------------------');
 
     print('$lat, $lon, $name, $openNow, $photos, $placeID');
+    _add(latitude: lat, longitude: lon, title: name, info: openNow.toString());
   }
 
   Future<void> updateLocation() async {
@@ -165,7 +166,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
         print('Current latitude: ${newPosition.latitude}');
         print('Current longitude: ${newPosition.longitude}');
         final CameraPosition _changedPosition =
-            CameraPosition(target: LatLng(latitude, longitude), zoom: 15.0);
+            CameraPosition(target: LatLng(latitude, longitude), zoom: 11.0);
         _animateCameraForChangedLocation(_changedPosition);
       });
     } catch (e) {
@@ -232,7 +233,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
           mapType: MapType.normal,
           initialCameraPosition: CameraPosition(
             target: LatLng(latitude, longitude),
-            zoom: 15.0,
+            zoom: 11.0,
           ),
           onMapCreated: (GoogleMapController controller) {
             try {
@@ -250,9 +251,9 @@ class _LoadingScreenState extends State<LoadingScreen> {
   }
 
   /// Add markers to represent the nearby places
-  void _add() {
+  void _add({double latitude, double longitude, String title, String info}) {
     //final int markerCount = markers.length;
-
+    (info == 'true') ? info = 'Yes' : info = 'No';
     final String markerIdVal = 'marker_id_$_markerIdCounter';
     _markerIdCounter++;
     final MarkerId markerId = MarkerId(markerIdVal);
@@ -261,7 +262,12 @@ class _LoadingScreenState extends State<LoadingScreen> {
     Marker marker = Marker(
       markerId: markerId,
       position: LatLng(latitude, longitude),
-      infoWindow: InfoWindow(title: markerIdVal, snippet: '*'),
+      infoWindow: InfoWindow(
+        title: title,
+        snippet: 'Open Now: $info',
+        //TODO: Navigates to a new page and shows info retried from wikipedia and photos
+        onTap: () {},
+      ),
       onTap: () {
         _onMarkerTapped(markerId);
       },
