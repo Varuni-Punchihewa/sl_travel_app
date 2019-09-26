@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
       initialRoute: 'home',
       routes: {
         'home': (context) => LoadingScreen(),
-        'photo_uploader': (context) => UploadPhoto()
+        'photo_uploader': (context) => UploadPhoto(),
       },
     );
   }
