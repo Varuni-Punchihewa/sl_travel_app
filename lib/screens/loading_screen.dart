@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import 'package:sl_travel_app/services/place_information.dart';
 import 'package:sl_travel_app/services/build_address.dart';
+import 'place_info_screen.dart';
 
 class LoadingScreen extends StatefulWidget {
   @override
@@ -22,10 +23,11 @@ class _LoadingScreenState extends State<LoadingScreen> {
   double lat;
   double lon;
   String name;
-  bool openNow;
+  double rating;
   List photos = [];
   String placeID;
   bool geolocationStatus;
+  String photoRef;
   String _address;
 
   ///check whether the GPS is enabled or not. If enabled, get the current location,
@@ -75,8 +77,10 @@ class _LoadingScreenState extends State<LoadingScreen> {
         .getPositionStream(locationOptions)
         .listen((Position position) async {
       //_position = position;
-      latitude = position.latitude;
-      longitude = position.longitude;
+      setState(() {
+        latitude = position.latitude;
+        longitude = position.longitude;
+      });
 
       /// Once the user enables GPS return the Map view
       if (latitude != null && longitude != null) {
@@ -87,6 +91,9 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
       print('Changed latitude: ${position.latitude}');
       print('Changed longitude: ${position.longitude}');
+
+      /// Clear the previous markers when current position changes
+      markers.clear();
       final CameraPosition _newPosition = CameraPosition(
           target: LatLng(position.latitude, position.longitude), zoom: 11.0);
       final GoogleMapController controller = await _controller.future;
@@ -125,12 +132,16 @@ class _LoadingScreenState extends State<LoadingScreen> {
   void extractNearbyPlaces(decodedData) {
     setState(() {
       if (decodedData == null) {
-        lat = null;
-        lon = null;
-        name = '';
-        openNow = false;
-        photos = null;
-        placeID = '';
+        setState(() {
+          lat = null;
+          lon = null;
+          name = '';
+          rating = null;
+          photos = null;
+          placeID = '';
+          photoRef = '';
+        });
+
         return;
       }
       getInfo(decodedData);
@@ -139,20 +150,28 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
 //TODO: iterate this in a loop
   getInfo(decodedData) {
-    lat = decodedData['results'][0]['geometry']['location']
-        ['lat']; //results[0].geometry.location.lat
-    lon = decodedData['results'][0]['geometry']['location']['lng'];
-    name = decodedData['results'][0]['name']; //results[0].name
-    openNow = decodedData['results'][0]['opening_hours']
-        ['open_now']; //results[0].opening_hours.open_now
-    photos = decodedData['results'][0]['photos']; //results[0].photos
-    placeID = decodedData['results'][0]['place_id']; //results[0].place_id
+    List dataList = decodedData['results'];
+    for (int i = 0; i < dataList.length; i++) {
+      print(dataList.length);
 
-    print(
-        '--------------------------------------------------------------------------------------');
+      setState(() {
+        var data = dataList[i];
+        lat = data['geometry']['location']
+            ['lat']; //results[0].geometry.location.lat
+        lon = data['geometry']['location']['lng'];
+        name = data['name']; //results[0].name
+        photos = data['photos']; //results[0].photos
+        placeID = data['place_id']; //results[0].place_id
+        photoRef = data['photos'][0]
+            ['photo_reference']; //results[0].photos[0].photo_reference
+        _add(latitude: lat, longitude: lon, title: name, photoRef: photoRef);
+      });
 
-    print('$lat, $lon, $name, $openNow, $photos, $placeID');
-    _add(latitude: lat, longitude: lon, title: name, info: openNow.toString());
+      print(
+          '--------------------------------------------------------------------------------------');
+
+      print('$lat, $lon, $name, $rating, $photos, $placeID');
+    }
   }
 
   Future<void> updateLocation() async {
@@ -251,11 +270,15 @@ class _LoadingScreenState extends State<LoadingScreen> {
   }
 
   /// Add markers to represent the nearby places
-  void _add({double latitude, double longitude, String title, String info}) {
+  void _add(
+      {double latitude, double longitude, String title, String photoRef}) {
     //final int markerCount = markers.length;
-    (info == 'true') ? info = 'Yes' : info = 'No';
+    //(info == 'true') ? info = 'Yes' : info = 'No';
     final String markerIdVal = 'marker_id_$_markerIdCounter';
-    _markerIdCounter++;
+    setState(() {
+      _markerIdCounter++;
+    });
+
     final MarkerId markerId = MarkerId(markerIdVal);
     //LatLng center = LatLng(latitude, longitude);
 
@@ -264,9 +287,17 @@ class _LoadingScreenState extends State<LoadingScreen> {
       position: LatLng(latitude, longitude),
       infoWindow: InfoWindow(
         title: title,
-        snippet: 'Open Now: $info',
+        //snippet: 'Rating: $info',
         //TODO: Navigates to a new page and shows info retried from wikipedia and photos
-        onTap: () {},
+        onTap: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => PlaceScreen(
+                        placeInfo: title,
+                        photoReference: photoRef,
+                      )));
+        },
       ),
       onTap: () {
         _onMarkerTapped(markerId);

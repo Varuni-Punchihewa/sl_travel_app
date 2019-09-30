@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/upload_photo_screen.dart';
 import 'screens/loading_screen.dart';
+import 'screens/place_info_screen.dart';
 
 void main() => runApp(MyApp());
 
@@ -15,6 +16,7 @@ class MyApp extends StatelessWidget {
       routes: {
         'home': (context) => LoadingScreen(),
         'photo_uploader': (context) => UploadPhoto(),
+        'place_info': (context) => PlaceScreen(),
       },
     );
   }
