@@ -55,10 +55,8 @@ class _PlaceScreenState extends State<PlaceScreen> {
       var result = wikiDecodedData['query']['pages']; //query.pages['-1']
 
       if (result.containsKey('-1')) {
-        print('9999999999999999999999999999999999999999999');
         return getGooglePlaceInfo();
       } else {
-        print('777777777777777777777777777777777777777777');
         return getWikiPlaceInfo(wikiDecodedData); //query.pages[5772075].extract
       }
     }
@@ -102,7 +100,6 @@ class _PlaceScreenState extends State<PlaceScreen> {
     setState(() {
       this.gMapDecodedData = gMapDecodedData;
     });
-    print('555555555555555555555555555555555555555555555');
   }
 
   Widget getGooglePlaceInfo() {
