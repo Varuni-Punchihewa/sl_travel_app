@@ -13,6 +13,8 @@ dependencies:
   http: ^0.12.0+2
   cupertino_icons: ^0.1.2
   google_maps_flutter: ^0.5.21+3
+  text_to_speech_api: ^0.0.1
+  audioplayer: ^0.5.2
 
 dev_dependencies:
   flutter_test:

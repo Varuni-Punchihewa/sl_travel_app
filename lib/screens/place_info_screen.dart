@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:sl_travel_app/services/networking.dart';
+import 'package:text_to_speech_api/text_to_speech_api.dart';
+import 'package:audioplayer/audioplayer.dart';
+import 'dart:io';
 
 // https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=CnRvAAAAwMpdHeWlXl-lH0vp7lez4znKPIWSWvgvZFISdKx45AwJVP1Qp37YOrH7sqHMJ8C-vBDC546decipPHchJhHZL94RcTUfPa1jWzo-rSHaTlbNtjh-N68RkcToUCuY9v2HNpo5mziqkir37WU8FJEqVBIQ4k938TI3e7bf8xq-uwDZcxoUbO_ZJzPxremiQurAYzCTwRhE_V0&sensor=false&key=AddYourOwnKeyHere
 //https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro&explaintext&redirects=1&titles=Nepal
@@ -27,10 +30,16 @@ class PlaceScreen extends StatefulWidget {
 class _PlaceScreenState extends State<PlaceScreen> {
   var wikiDecodedData;
   var gMapDecodedData;
+  String extract;
+  String textOnButton = 'Enable Text to Speech';
+  bool isEnabled = false;
+  TextToSpeechService _service = TextToSpeechService(apiKey);
+  AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
   initState() {
     super.initState();
+
     print('place title');
     print(widget.placeTitle);
     getWikiData();
@@ -42,6 +51,7 @@ class _PlaceScreenState extends State<PlaceScreen> {
     super.dispose();
     wikiDecodedData = null;
     gMapDecodedData = null;
+    _audioPlayer.stop();
   }
 
   Widget getTextDisplay() {
@@ -104,13 +114,19 @@ class _PlaceScreenState extends State<PlaceScreen> {
 
   Widget getGooglePlaceInfo() {
     var result = extractGMapData();
+    setState(() {
+      extract = result;
+    });
+
     return Text('$result');
   }
 
   Widget getWikiPlaceInfo(decodedData) {
     String key = decodedData['query']['pages'].keys.first;
     String extract = decodedData['query']['pages'][key]['extract'];
-
+    setState(() {
+      this.extract = extract;
+    });
     return Text('$extract');
   }
 
@@ -162,13 +178,59 @@ class _PlaceScreenState extends State<PlaceScreen> {
     return result;
   }
 
+  void _playAudio(bool isEnabled) async {
+    if (isEnabled == false) {
+      setState(() {
+        isEnabled = true;
+        this.isEnabled = isEnabled;
+        textOnButton = 'Disable Text to Speech';
+      });
+    } else {
+      setState(() {
+        isEnabled = false;
+        this.isEnabled = isEnabled;
+        textOnButton = 'Enable Text to Speech';
+      });
+    }
+
+    if (isEnabled == true) {
+      String extract = '${widget.placeTitle}. ${this.extract}';
+      File file = await _service.textToSpeech(text: extract);
+      _audioPlayer.play(file.path, isLocal: true);
+    } else {
+      _audioPlayer.stop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'SL Tour Assistant',
+        ),
+        backgroundColor: Colors.black,
+      ),
       body: SafeArea(
         child: ListView(
+          padding: EdgeInsets.only(left: 5.0, right: 5.0),
           shrinkWrap: true,
           children: <Widget>[
+            FlatButton(
+              color: Colors.blue,
+              textColor: Colors.white,
+              disabledColor: Colors.grey,
+              disabledTextColor: Colors.black,
+              padding: EdgeInsets.all(0.0),
+              splashColor: Colors.blue[100],
+              onPressed: () {
+                _playAudio(isEnabled);
+              },
+              child: Text(
+                textOnButton,
+                style: TextStyle(fontSize: 16.0),
+              ),
+            ),
             Image.network(
               '$URL?maxheight=600&maxwidth=600&photoreference=${widget.photoReference}&sensor=false&key=$apiKey',
               fit: BoxFit.fitHeight,
