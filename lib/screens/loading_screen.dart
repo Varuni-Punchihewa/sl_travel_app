@@ -164,7 +164,12 @@ class _LoadingScreenState extends State<LoadingScreen> {
         placeID = data['place_id']; //results[0].place_id
         photoRef = data['photos'][0]
             ['photo_reference']; //results[0].photos[0].photo_reference
-        _add(latitude: lat, longitude: lon, title: name, photoRef: photoRef);
+        _add(
+            latitude: lat,
+            longitude: lon,
+            title: name,
+            photoRef: photoRef,
+            placeID: placeID);
       });
 
       print(
@@ -271,7 +276,11 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
   /// Add markers to represent the nearby places
   void _add(
-      {double latitude, double longitude, String title, String photoRef}) {
+      {double latitude,
+      double longitude,
+      String title,
+      String photoRef,
+      String placeID}) {
     //final int markerCount = markers.length;
     //(info == 'true') ? info = 'Yes' : info = 'No';
     final String markerIdVal = 'marker_id_$_markerIdCounter';
@@ -294,8 +303,9 @@ class _LoadingScreenState extends State<LoadingScreen> {
               context,
               MaterialPageRoute(
                   builder: (context) => PlaceScreen(
-                        placeInfo: title,
+                        placeTitle: title,
                         photoReference: photoRef,
+                        placeID: placeID,
                       )));
         },
       ),

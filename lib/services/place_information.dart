@@ -1,7 +1,7 @@
 import 'networking.dart';
 
 const URL = 'https://maps.googleapis.com/maps/api/place/textsearch/json?query=';
-const apiKey = 'AIzaSyA3wZ-g1QceGBgjzz90laxGX2Bo0rWqKAU';
+const apiKey = 'AIzaSyDPx_Z6Ap3AvLALGCjr8lWkp1en84qYxPY';
 
 class PlaceInfo {
   Future<dynamic> getNearbyPlaces(String address) async {

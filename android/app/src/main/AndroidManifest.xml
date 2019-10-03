@@ -13,7 +13,7 @@
         android:label="sl_travel_app"
         android:icon="@mipmap/ic_launcher">
         <meta-data android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyA3wZ-g1QceGBgjzz90laxGX2Bo0rWqKAU"/>
+            android:value="AIzaSyDPx_Z6Ap3AvLALGCjr8lWkp1en84qYxPY"/>
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
