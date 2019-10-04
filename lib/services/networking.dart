@@ -16,4 +16,17 @@ class NetworkHelper {
       print(e);
     }
   }
+
+  postData() async {
+    try {
+      Response response = await put(url);
+      print(response.statusCode);
+      if (response.statusCode == 200) {
+        String data = response.body;
+        return jsonDecode(data);
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
 }
