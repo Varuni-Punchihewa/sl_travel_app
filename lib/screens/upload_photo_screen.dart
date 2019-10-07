@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:async';
-import 'dart:convert';
 import 'package:sl_travel_app/services/networking.dart';
 
+import 'package:url_launcher/url_launcher.dart';
+
 //https://images.google.com/searchbyimage?image_url=https://i.ibb.co/XxjfF59/donkeypng-donkey-png-273-491.png
-//https://images.google.com/searchbyimage?image_url=https://live.staticflickr.com/65535/48843248352_377d10aa73_s.jpg
+
 const imgbbAPIKey = '3459fcd562cee3e42fc0089be694906d';
+const baseURL = 'https://images.google.com/searchbyimage?image_url=';
 
 class UploadPhoto extends StatefulWidget {
   @override
@@ -16,6 +18,7 @@ class UploadPhoto extends StatefulWidget {
 
 class _UploadPhotoState extends State<UploadPhoto> {
   File _imageFile;
+  String publicImgUrl;
   dynamic _pickImageError;
   String _retrieveDataError;
 
@@ -76,6 +79,15 @@ class _UploadPhotoState extends State<UploadPhoto> {
     );
   }
 
+  _launchURL() async {
+    String url = '$baseURL$publicImgUrl';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -101,15 +113,26 @@ class _UploadPhotoState extends State<UploadPhoto> {
                   splashColor: Colors.blue[100],
                   onPressed: () async {
                     print(_imageFile);
+
+                    /// Convert the image into base64 encode
 //                    List<int> imageBytes = _imageFile.readAsBytesSync();
 //                    String base64Image = base64Encode(imageBytes);
 //                    print(base64Image);
-                    String URL =
-                        'https://api.imgbb.com/1/upload?key=$imgbbAPIKey?image=iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==';
-                    NetworkHelper networkHelper = NetworkHelper(URL);
+                    ///Upload the image into a public server
+//                    String URL =
+//                        'https://api.imgbb.com/1/upload?key=$imgbbAPIKey?image=$base64Image';
+//                    NetworkHelper networkHelper = NetworkHelper(URL);
+//
+//                    var decodedData = await networkHelper.postData();
+                    ///Get the public image URL
+                    setState(() {
+                      this.publicImgUrl =
+                          'https://upload.wikimedia.org/wikipedia/commons/c/c2/Ruwanweli_Saya_1.jpg';
+                    });
 
-                    var decodedData = await networkHelper.postData();
-                    print(decodedData);
+                    /// Navigate to the Web view page
+
+                    _launchURL();
                   },
                 ),
               ),
