@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:async';
-import 'package:sl_travel_app/services/networking.dart';
-
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path/path.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 //https://images.google.com/searchbyimage?image_url=https://i.ibb.co/XxjfF59/donkeypng-donkey-png-273-491.png
@@ -28,26 +28,6 @@ class _UploadPhotoState extends State<UploadPhoto> {
       setState(() {});
     } catch (e) {
       _pickImageError = e;
-    }
-  }
-
-  Widget _previewImage() {
-    final Text retrieveError = _getRetrieveErrorWidget();
-    if (retrieveError != null) {
-      return retrieveError;
-    }
-    if (_imageFile != null) {
-      return Image.file(_imageFile);
-    } else if (_pickImageError != null) {
-      return Text(
-        'Pick image error: $_pickImageError',
-        textAlign: TextAlign.center,
-      );
-    } else {
-      return Text(
-        'You have not yet picked an image.',
-        textAlign: TextAlign.center,
-      );
     }
   }
 
@@ -81,11 +61,35 @@ class _UploadPhotoState extends State<UploadPhoto> {
 
   _launchURL() async {
     String url = '$baseURL$publicImgUrl';
+    print(url);
     if (await canLaunch(url)) {
       await launch(url);
     } else {
       throw 'Could not launch $url';
     }
+  }
+
+  Future uploadPic() async {
+    ///Get only the image name
+    String fileName = basename(_imageFile.path);
+
+    ///Get the firebase storage reference for the image file
+    StorageReference firebaseStorageRef =
+        FirebaseStorage.instance.ref().child(fileName);
+
+    ///Upload the image file to the firebase
+    StorageUploadTask uploadTask = firebaseStorageRef.putFile(_imageFile);
+
+    ///Wait till the image file is uploaded to the firebase completely
+    StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
+
+    var downloadUrl = await taskSnapshot.ref.getDownloadURL();
+    String url = downloadUrl.toString();
+    setState(() {
+      publicImgUrl = url;
+      print("Profile Picture uploaded");
+      print(url);
+    });
   }
 
   @override
@@ -118,21 +122,11 @@ class _UploadPhotoState extends State<UploadPhoto> {
 //                    List<int> imageBytes = _imageFile.readAsBytesSync();
 //                    String base64Image = base64Encode(imageBytes);
 //                    print(base64Image);
-                    ///Upload the image into a public server
-//                    String URL =
-//                        'https://api.imgbb.com/1/upload?key=$imgbbAPIKey?image=$base64Image';
-//                    NetworkHelper networkHelper = NetworkHelper(URL);
-//
-//                    var decodedData = await networkHelper.postData();
-                    ///Get the public image URL
-                    setState(() {
-                      this.publicImgUrl =
-                          'https://upload.wikimedia.org/wikipedia/commons/c/c2/Ruwanweli_Saya_1.jpg';
-                    });
+                    ///Upload the image into firebase
+                    await uploadPic();
 
-                    /// Navigate to the Web view page
-
-                    _launchURL();
+                    /// Open the web view on the browser
+                    await _launchURL();
                   },
                 ),
               ),
@@ -165,14 +159,5 @@ class _UploadPhotoState extends State<UploadPhoto> {
         ],
       ),
     );
-  }
-
-  Text _getRetrieveErrorWidget() {
-    if (_retrieveDataError != null) {
-      final Text result = Text(_retrieveDataError);
-      _retrieveDataError = null;
-      return result;
-    }
-    return null;
   }
 }

@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "850344399430",
+    "firebase_url": "https://tourplanner-218f6.firebaseio.com",
+    "project_id": "tourplanner-218f6",
+    "storage_bucket": "tourplanner-218f6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:850344399430:android:72e27ba1e4ac18fdd03047",
+        "android_client_info": {
+          "package_name": "com.varunipunchihewa.sl_travel_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "850344399430-du89kll8oguk2c181bfm7lmorakbjl88.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgfotYfU8FWwhL4fMfGSV5H_PtY6KIjb8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "850344399430-du89kll8oguk2c181bfm7lmorakbjl88.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

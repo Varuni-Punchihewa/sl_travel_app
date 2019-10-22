@@ -17,10 +17,13 @@ dependencies:
   audioplayer: ^0.5.2
   image_picker: ^0.6.1+4
   url_launcher: ^5.1.4
+  mockito: ^4.1.1
+  firebase_storage: ^3.0.6
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  test:
 
 flutter:
   uses-material-design: true
