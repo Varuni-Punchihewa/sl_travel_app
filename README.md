@@ -12,12 +12,13 @@ Display a brief description of the selected place
 **3. Text-to-Speech**: 
 User can listen to the place description via a plugged-in headset
 
-A video presentation of the app can be found [here](https://drive.google.com/file/d/1nkyvH3PJZQnj2KzYukfSeN0HG-twHU9A/view?usp=sharing)
-
 **4. Image uploader**: 
 User can upload a photo from the gallery or take a one via phone camera, and do a Google Image search via the app to identify the uploaded photo.
+
+A video presentation of the app can be found [here](https://drive.google.com/file/d/1nkyvH3PJZQnj2KzYukfSeN0HG-twHU9A/view?usp=sharing)
+
 ## Install flutter
-Follow the steps in the Flutter online documentation: <https://flutter.dev/docs/get-started/install> to install and setup flutter on your local machine.
+Follow the steps in the Flutter [online documentation](https://flutter.dev/docs/get-started/install) to install and setup flutter on your local machine.
 ## Run this project
 * Fork/download this project
 * Navigate to the project's location from your command prompt/terminal/IDE terminal
