@@ -148,7 +148,6 @@ class _LoadingScreenState extends State<LoadingScreen> {
     });
   }
 
-//TODO: iterate this in a loop
   getInfo(decodedData) {
     List dataList = decodedData['results'];
     for (int i = 0; i < dataList.length; i++) {
@@ -297,7 +296,6 @@ class _LoadingScreenState extends State<LoadingScreen> {
       infoWindow: InfoWindow(
         title: title,
         //snippet: 'Rating: $info',
-        //TODO: Navigates to a new page and shows info retried from wikipedia and photos
         onTap: () {
           Navigator.push(
               context,
