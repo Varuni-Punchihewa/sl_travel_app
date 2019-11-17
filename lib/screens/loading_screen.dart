@@ -170,10 +170,6 @@ class _LoadingScreenState extends State<LoadingScreen> {
             photoRef: photoRef,
             placeID: placeID);
       });
-
-      print(
-          '--------------------------------------------------------------------------------------');
-
       print('$lat, $lon, $name, $rating, $photos, $placeID');
     }
   }
