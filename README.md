@@ -27,7 +27,7 @@ A video presentation of the app can be found [here](https://drive.google.com/fil
 ## Install flutter
 Follow the steps in the Flutter [online documentation](https://flutter.dev/docs/get-started/install) to install and setup flutter on your local machine.
 ## Run this project
-* Fork/download this project
+* Clone/download this project
 * Navigate to the project's location from your command prompt/terminal/IDE terminal
 * Run `flutter pub get` to get all the package dependencies
 * Run `flutter run` to run the project on your device/emulator
