@@ -17,7 +17,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
   int _markerIdCounter = 1;
   MarkerId selectedMarker;
-  Geolocator _geolocator;
+  Geolocator geolocator;
   Completer<GoogleMapController> _controller = Completer();
 
   double lat;
@@ -33,7 +33,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
   ///check whether the GPS is enabled or not. If enabled, get the current location,
   ///else returns a blank page with a Dialog asking the user to enable GPS
   checkPermission() async {
-    geolocationStatus = await _geolocator.isLocationServiceEnabled();
+    geolocationStatus = await geolocator.isLocationServiceEnabled();
     print('STATUS: $geolocationStatus');
 
     if (geolocationStatus == true) {
@@ -67,13 +67,13 @@ class _LoadingScreenState extends State<LoadingScreen> {
   @override
   initState() {
     super.initState();
-    _geolocator = Geolocator();
+    geolocator = Geolocator();
     LocationOptions locationOptions = LocationOptions(
         accuracy: LocationAccuracy.bestForNavigation, distanceFilter: 10);
     checkPermission();
 
     // ignore: unused_local_variable, cancel_subscriptions
-    StreamSubscription positionStream = _geolocator
+    StreamSubscription positionStream = geolocator
         .getPositionStream(locationOptions)
         .listen((Position position) async {
       //_position = position;
@@ -110,7 +110,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
     ///Translate the latitude and longitude of the user's location at that time into a readable address
     final List<Placemark> placemarks =
-        await _geolocator.placemarkFromCoordinates(latitude, longitude);
+        await geolocator.placemarkFromCoordinates(latitude, longitude);
 
     if (placemarks != null && placemarks.isNotEmpty) {
       BuildAddress buildAddress = BuildAddress();
@@ -176,7 +176,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
   Future<void> updateLocation() async {
     try {
-      Position newPosition = await _geolocator.getCurrentPosition(
+      Position newPosition = await geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
 
       setState(() {
